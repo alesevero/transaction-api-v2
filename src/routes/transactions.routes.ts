@@ -3,9 +3,8 @@ import { getCustomRepository } from 'typeorm';
 
 import TransactionsRepository from '../repositories/TransactionsRepository';
 import CreateTransactionService from '../services/CreateTransactionService';
-import GetCategoryService from '../services/GetCategoryService';
-// import DeleteTransactionService from '../services/DeleteTransactionService';
-// import ImportTransactionsService from '../services/ImportTransactionsService';
+import DeleteTransactionService from '../services/DeleteTransactionService';
+import ImportTransactionsService from '../services/ImportTransactionsService';
 
 const transactionsRouter = Router();
 
@@ -19,10 +18,7 @@ transactionsRouter.get('/', async (request, response) => {
 });
 
 transactionsRouter.post('/', async (request, response) => {
-  const { title, value, type, category: categoryName } = request.body;
-  const category = await new GetCategoryService().execute({
-    title: categoryName,
-  });
+  const { title, value, type, category } = request.body;
   const createTransactionRepository = new CreateTransactionService();
   return response.json(
     await createTransactionRepository.execute({ title, value, type, category }),
@@ -30,11 +26,16 @@ transactionsRouter.post('/', async (request, response) => {
 });
 
 transactionsRouter.delete('/:id', async (request, response) => {
-  // TODO
+  await new DeleteTransactionService().execute({ id: request.params.id });
+  return response.status(204).json();
 });
 
 transactionsRouter.post('/import', async (request, response) => {
-  // TODO
+  const importTransactionsService = new ImportTransactionsService();
+  const transactions = await importTransactionsService.execute(
+    'import_template.csv',
+  );
+  return response.json(transactions);
 });
 
 export default transactionsRouter;

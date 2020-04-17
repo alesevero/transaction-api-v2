@@ -7,16 +7,18 @@ interface Request {
 
 export default class GetCategoryService {
   public async execute({ title }: Request): Promise<Category> {
-    let category = await getRepository(Category).findOne({
+    const existingCategory = await getRepository(Category).findOne({
       where: { title },
     });
-    if (!category) {
+
+    if (!existingCategory) {
       // create category
-      category = await getRepository(Category).create({
+      const category = await getRepository(Category).create({
         title,
       });
       await getRepository(Category).save(category);
+      return category;
     }
-    return category;
+    return existingCategory;
   }
 }
