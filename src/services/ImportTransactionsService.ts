@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import csvtojson from 'csvtojson';
 import Transaction from '../models/Transaction';
 
@@ -14,7 +15,7 @@ interface Request {
 class ImportTransactionsService {
   public async execute(filename: string): Promise<Transaction[]> {
     const filepath = path.join(
-      path.resolve(__dirname, '..', '__tests__'),
+      path.resolve(__dirname, '..', '..', 'tmp'),
       filename,
     );
     const data = await csvtojson().fromFile(filepath);
@@ -35,15 +36,9 @@ class ImportTransactionsService {
       return transactions;
     }
     const transactions = await processArray(data);
-    /* const transactions = await Promise.all(
-      data.map(async transaction => {
-        const createdTransaction = await createTransactionService.execute(
-          transaction,
-        );
-        return createdTransaction;
-      }),
-    );
-    return transactions; */
+    if (await fs.promises.stat(filepath)) {
+      await fs.promises.unlink(filepath);
+    }
     return transactions;
   }
 }
